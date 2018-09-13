@@ -45,7 +45,6 @@ before_script:
   - |
     if [[ ! -z "$WP_VERSION" ]] ; then
       bash tests/bin/install.sh woocommerce_test root '' localhost $WP_VERSION
-      bash tests/bin/travis.sh before
       composer global require "phpunit/phpunit=4.8.*|5.7.*"
     fi
   - |
