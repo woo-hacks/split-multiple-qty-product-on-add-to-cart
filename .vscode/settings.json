@@ -1,0 +1,4 @@
+{
+    "php-docblocker.gap": false,
+    "phpcs.enable" : true,
+}
