@@ -1,55 +1,68 @@
+sudo: false
+dist: trusty
+
 language: php
 
-addons:
-  chrome: stable
-  apt:
-    packages:
-      - nginx
+notifications:
+  email:
+    on_success: always
+    on_failure: always
 
-sudo: false
-
-# Test main supported versions of PHP against latest WP.
-php:
-  - 5.6
-  - 7.0
-  - 7.1
-
-env:
-  - WP_VERSION=latest WP_MULTISITE=0
-
-# Additional tests against stable PHP (min recommended version is 5.6) and past supported versions of WP
-# and code coverage report.
-matrix:
-  fast_finish: true
-  include:
-  - php: 5.3
-    dist: precise
-  - php: 5.2
-    dist: precise
-  - php: 7.2
-    env: WP_VERSION=latest WP_MULTISITE=0 RUN_PHPCS=1 RUN_E2E=1
-  - php: 7.1
-    env: WP_VERSION=latest WP_MULTISITE=0 RUN_CODE_COVERAGE=1
-  allow_failures:
-  - env: WP_VERSION=latest WP_MULTISITE=0 RUN_CODE_COVERAGE=1
-
-before_script:
-  - phpenv config-rm xdebug.ini
-  - export PATH="$HOME/.composer/vendor/bin:$PATH"
-  - bash tests/bin/install.sh woocommerce_test root '' localhost $WP_VERSION
-  - bash tests/bin/travis.sh before
-
-script:
-  - bash tests/bin/phpunit.sh
-  - bash tests/bin/phpcs.sh
-  - travis_retry bash tests/bin/run-e2e-CI.sh
-
-after_script:
-  - bash tests/bin/travis.sh after
-
-# Specifies that Travis should create builds for master and release branches and also tags.
 branches:
   only:
     - master
-    - /^\d+\.\d+(\.\d+)?(-\S*)?$/
-    - /^release\//
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+matrix:
+  include:
+    - php: 7.2
+      env: WP_VERSION=latest
+    - php: 7.1
+      env: WP_VERSION=latest
+    - php: 7.0
+      env: WP_VERSION=latest
+    - php: 5.6
+      env: WP_VERSION=latest
+    - php: 5.6
+      env: WP_VERSION=trunk
+    - php: 5.6
+      env: WP_TRAVISCI=phpcs
+    - php: 5.3
+      env: WP_VERSION=latest
+      dist: precise
+
+before_script:
+  - export PATH="$HOME/.composer/vendor/bin:$PATH"
+  - |
+    if [ -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then
+      phpenv config-rm xdebug.ini
+    else
+      echo "xdebug.ini does not exist"
+    fi
+  - |
+    if [[ ! -z "$WP_VERSION" ]] ; then
+      bash tests/bin/install.sh woocommerce_test root '' localhost $WP_VERSION
+      bash tests/bin/travis.sh before
+      composer global require "phpunit/phpunit=4.8.*|5.7.*"
+    fi
+  - |
+    if [[ "$WP_TRAVISCI" == "phpcs" ]] ; then
+      composer global require wp-coding-standards/wpcs
+      composer global require phpcompatibility/phpcompatibility-wp:*
+      phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs,$HOME/.composer/vendor/phpcompatibility/php-compatibility,$HOME/.composer/vendor/phpcompatibility/phpcompatibility-wp
+    fi
+
+script:
+  - |
+    if [[ ! -z "$WP_VERSION" ]] ; then
+      phpunit
+      WP_MULTISITE=1 phpunit
+    fi
+  - |
+    if [[ "$WP_TRAVISCI" == "phpcs" ]] ; then
+      phpcs
+    fi
+
