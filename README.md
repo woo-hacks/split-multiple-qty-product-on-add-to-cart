@@ -1,5 +1,7 @@
 <h1> HACK #2 -While doing add to cart, split product added with more than 1 quanitity into multiple cart items</h1>
 
+[![Build Status](https://travis-ci.com/woo-hacks/woo-split-multiple-qty-cart-item.svg?branch=master)](https://travis-ci.com/woo-hacks/woo-split-multiple-qty-cart-item)
+
 <p><b>Check the plugin code for usage.</b></p>
 
 >`Don't get overwhelmed! Most of the file in this repo is related to unit testing or integrated build`.
