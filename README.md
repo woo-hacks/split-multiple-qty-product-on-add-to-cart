@@ -7,7 +7,7 @@
 >`Don't get overwhelmed! Most of the file in this repo is related to unit testing or integrated build`.
 
 <br/>
-<strong>Following files are all need to get this running : </strong>
+<strong>Following files are all that you need to get started : </strong>
 
 ```
 woo-split-multiple-qty-cart-item/
